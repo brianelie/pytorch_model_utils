@@ -39,10 +39,13 @@ class EarlyStopping():
         if not self.val_patience:
             return False
 
+        # New best validation loss
         if val_loss < self.val_best:
             self.val_best = val_loss
             self.best_epoch = epoch
             torch.save(model.state_dict(), self.model_path)
+            
+        # Exceeded validation patience without an improvement in validation loss
         elif (epoch - self.best_epoch) >= self.val_patience:
             print(
                 f'Stopping on early stopping, best epoch: \
@@ -61,6 +64,11 @@ def train(model, dataloads, criterion, optimizer, metrics=None,
         criterion (nn.Module.Loss): Loss Function to minimize.
         Does not include KL divergence for bayesian models
         optimizer (torch.optim): Optimizer
+        metrics (dict, optional): Dictionary of torchmetrics. Expects key for
+        'train', 'val', and 'test' for each of their datasets respectively. 
+        Also looks for the keys 'short' and 'name' which should be strings for
+        how to label the metric. 'short' is for progress bar display, and
+        'name' is for learning curves
         epochs (int, optional): Number of Epochs to train. Defaults to 10.
         val_patience (int, optional): Number of epochs to train
         beyond lowest validation loss before stopping. Defaults to None.
@@ -73,12 +81,14 @@ def train(model, dataloads, criterion, optimizer, metrics=None,
         and train/val metrics to review learning curves
         model (nn.Module): Trained model
     """
+    # Use GPU is available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     results = pd.DataFrame(columns=['train_loss', 'val_loss'])
     if metrics is not None:
         results[f'train_{metrics["short"]}'] = None
         results[f'val_{metrics["short"]}'] = None
 
+    # Instantiates EarlyStopping() class. This also saves the model weights on new best
     early_stopping = EarlyStopping(val_patience, model_path)
 
     for epoch in range(1, epochs+1):
@@ -97,6 +107,7 @@ def train(model, dataloads, criterion, optimizer, metrics=None,
                 running_loss = 0
 
                 for num, (data, y_true) in enumerate(dataloads[phase]):
+                    # Put data, y_true on GPU if available
                     data = data.to(device)
                     y_true = y_true.to(device)
 
@@ -137,7 +148,8 @@ def train(model, dataloads, criterion, optimizer, metrics=None,
                     tepoch.set_postfix(results.loc[epoch].to_dict())
                     if phase == 'train':
                         tepoch.update(1)
-
+        
+        # Zero out metrics each epoch
         metrics[phase].reset()
 
         # Evaluate early stopping and set best weights and stop if necessary
@@ -209,6 +221,7 @@ def evaluate(model, dataload, criterion, metrics):
             # uncertainty quantification
             y_pred = nn.Softmax(dim=1)(y_pred)
 
+            # Stack all predictions into one torch array
             if y_pred_all is not None:
                 y_pred_all = torch.vstack((y_pred_all, y_pred))
             else:
