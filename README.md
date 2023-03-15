@@ -15,7 +15,7 @@ Set of Pytorch functions designed to be modular and transferable to any Neural N
 1. Clone the git repository \
 git clone https://github.com/brianelie/pytorch_model_utils.git
 
-2. Set Up Environment
+2. Set Up Environment \
 Optionally, use the provided environment file (run from repo directory): \
 conda env create -n ENVNAME --file environment.yml
 Or at least ensure that packages liked in [Environmental Requirements](#environment-requirements) are in your environment. 
