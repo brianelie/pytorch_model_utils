@@ -1,4 +1,4 @@
-# pytorch_model_utils
+# PyTorch Bayesian Model Utilities
 Set of Pytorch functions designed to be modular and transferable to any Neural Network application. Includes functionality for Bayesian models
 
 ## Environment Requirements
