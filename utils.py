@@ -44,12 +44,11 @@ class EarlyStopping():
             self.val_best = val_loss
             self.best_epoch = epoch
             torch.save(model.state_dict(), self.model_path)
-            
+
         # Exceeded validation patience without an improvement in validation loss
         elif (epoch - self.best_epoch) >= self.val_patience:
-            print(
-                f'Stopping on early stopping, best epoch: \
-                {self.best_epoch} with val loss: {self.val_best:.3f}')
+            print('Stopping on early stopping',
+                  f'best epoch: {self.best_epoch} with val loss: {self.val_best:.3f}')
             return True
         return False
 
@@ -148,7 +147,7 @@ def train(model, dataloads, criterion, optimizer, metrics=None,
                     tepoch.set_postfix(results.loc[epoch].to_dict())
                     if phase == 'train':
                         tepoch.update(1)
-        
+
         # Zero out metrics each epoch
         metrics[phase].reset()
 
