@@ -302,7 +302,7 @@ def calibrated_uncertainty(stats, y_true, metric, total_classes, masks):
         # Make sure entropy is not empty (no entropy values less than mask/10)
         if len(entropy_filt) > 0:
             y_true_filt = y_true[mask_entropy]
-            y_pred_filt = torch.Tensor(stats['max_pred'][mask_entropy])
+            y_pred_filt = stats['max_pred'][mask_entropy]
             metric_val.append(metric(y_pred_filt, y_true_filt).item())
             data.append(len(y_true_filt)/len(y_true))
     return metric_val, data
