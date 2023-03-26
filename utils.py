@@ -277,3 +277,32 @@ def uncertainty_quantification(y_preds):
 
     return {'preds':preds, 'max_pred':max_pred.astype(int), 'var': var,
             'entropy': entropy, 'aleatoric': aleatoric, 'epistemic': epistemic}
+
+
+def calibrated_uncertainty(stats, y_true, metric, total_classes, masks):
+    """Generates data for a calibrated uncertainty plot
+
+    Args:
+        stats (dict): output of uncertainty quantification
+        y_true (torch.tensor): True values
+        metric (torchmetric): torchmetric metric to evaluate on
+        total_classes (int): Total number of classes (used to normalize entropy)
+        masks (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    # Normalize entropy for the masks to work universally
+    entropy = stats['entropy']/np.log2(total_classes)
+    metric_val = []
+    data = []
+    for mask in masks:
+        mask_entropy = entropy <= mask
+        entropy_filt = entropy[mask_entropy]
+        # Make sure entropy is not empty (no entropy values less than mask/10)
+        if len(entropy_filt) > 0:
+            y_true_filt = y_true[mask_entropy]
+            y_pred_filt = torch.tensor(stats['max_pred'][mask_entropy])
+            metric_val.append(metric(y_pred_filt, y_true_filt).item())
+            data.append(len(y_true_filt)/len(y_true))
+    return metric_val, data
