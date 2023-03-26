@@ -275,7 +275,7 @@ def uncertainty_quantification(y_preds):
         tmp = pred_val - preds[i]
         epistemic[i] = np.trace(tmp.T.dot(tmp)/mc_inf)
 
-    return {'preds':preds, 'max_pred':max_pred.astype(int), 'var': var,
+    return {'preds':torch.Tensor(preds), 'max_pred':max_pred.astype(int), 'var': var,
             'entropy': entropy, 'aleatoric': aleatoric, 'epistemic': epistemic}
 
 
