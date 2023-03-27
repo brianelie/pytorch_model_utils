@@ -180,15 +180,21 @@ def learning_curves(results, fig, metrics):
     met_ax.set_xlabel("Epochs")
     met_ax.set_ylabel(metrics["name"])
     met_ax.legend()
+    
+def enable_dropout(model):
+    """ Function to enable the dropout layers during test-time """
+    for m in model.modules():
+        if m.__class__.__name__.startswith('Dropout'):
+            m.train()
 
-
-def evaluate(model, dataload, criterion, metrics):
+def evaluate(model, dataload, criterion, metrics, dropout=False):
     """Evaluates a trained pytorch model
 
     Args:
         model (nn.Module): trained pytorch model
         dataload (pytorch DataLoader): dataloader to evaluate
         criterion (nn.Module.Loss): Loss function to use
+        dropout (boolean): If true, sets all dropout layers to train mode
 
     Returns:
         y_pred_all: logits for all data samples in dataload
@@ -199,6 +205,7 @@ def evaluate(model, dataload, criterion, metrics):
         running_loss = 0
 
         model.eval()
+        enable_dropout(model)
 
         y_pred_all = None
 
