@@ -205,7 +205,8 @@ def evaluate(model, dataload, criterion, metrics, dropout=False):
         running_loss = 0
 
         model.eval()
-        enable_dropout(model)
+        if dropout:
+            enable_dropout(model)
 
         y_pred_all = None
 
